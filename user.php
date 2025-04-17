@@ -22,10 +22,37 @@ function addUser($user, $connection) {
             ':email' => $email,
             ':password' => $password
         ]);
-        return "Register Succesuful";
+        return header("location:index.php");
+        
     } catch (PDOException $e) {
         return "Problem In Connection " . $e->getMessage();
     }
 }
+
+
+
+function userLogin($email, $password, $connection) {
+    $sql = "SELECT password FROM users WHERE email = ?";
+    $stmt = $connection->prepare($sql);
+
+    try {
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['id'] = $user['id'];
+
+
+            header("location:index.php");
+            exit;
+
+        } else {
+            return "Invalid email or password";
+        }
+    } catch (PDOException $e) {
+        return "Problem In Connection: " . $e->getMessage();
+    }
+}
+
 
 ?>

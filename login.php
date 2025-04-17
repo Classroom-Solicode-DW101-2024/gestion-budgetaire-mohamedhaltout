@@ -1,30 +1,35 @@
 <?php
-$connection = require 'config.php';
+
+require 'config.php';
 require 'user.php';
-session_start();
+
 $error = '';
 $success = '';
 
+session_start();
+
 if (isset($_SESSION['id'])) {
-    header("location: index.php");
+    header("Location: index.php");
     exit;
 }
 
 if (isset($_POST['submit'])) {
-    $user = [
-        'nom' => $_POST['nom'],
-        'email' => $_POST['email'],
-        'password' => $_POST['password']
-    ];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    if (empty($user['nom']) || empty($user['email']) || empty($user['password'])) {
-        $error = "All fields are required";
-    } elseif (emailExists($user['email'], $connection)) {
-        $error = "This email already exists";
+    if (empty($email) || empty($password)) {
+        $error = "Please fill in the email and password";
     } else {
-        $success = addUser($user, $connection);
+        $loginResult = userLogin($email, $password, $connection);  
+
+
+        if ($loginResult !== "Login Successful") {
+            $error = $loginResult; 
+    
+        }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +37,7 @@ if (isset($_POST['submit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Login</title>
     <style>
         * {
             box-sizing: border-box;
@@ -160,38 +165,39 @@ if (isset($_POST['submit'])) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>Create Account</h1>
-            <p>Please fill in the details to register</p>
+            <h1>Welcome Back</h1>
+            <p>Please enter your credentials to login</p>
         </div>
 
-
         <?php if ($error): ?>
-            <div class="alert alert-danger"><?php echo $error; ?></div>
-        <?php elseif ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
+            <div class="alert alert-danger">
+                <?php echo $error; ?>
+            </div>
         <?php endif; ?>
 
-        <form method="POST">
-            <div class="form-group">
-                <label for="nom">Full Name</label>
-                <input type="text" name="nom" id="nom" class="form-control">
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <?php echo $success; ?>
             </div>
+        <?php endif; ?>
 
+        <form action="" method="POST">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" class="form-control">
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="password" class="form-control">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
             </div>
 
-            <button type="submit" name="submit" class="btn">Register</button>
+            <button type="submit" name="submit" class="btn">Sign In</button>
         </form>
 
         <div class="footer">
-            Already have an account? <a href="login.php">Log in</a>
+            <p>Don't have an account? <a href="register.php">Sign up</a></p>
+            <p><a href="forgot-password.php">Forgot password?</a></p>
         </div>
     </div>
 </body>
